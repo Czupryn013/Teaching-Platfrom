@@ -1,1 +1,3 @@
-./idea
+.idea/
+.env/
+teaching-platfrom/__pycache__/
