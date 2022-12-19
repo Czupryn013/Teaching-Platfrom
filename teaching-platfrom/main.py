@@ -1,3 +1,5 @@
-import db_handler
+import controller
+from flask import Flask
 
-db_handler.app.run()
+
+controller.app.run()
