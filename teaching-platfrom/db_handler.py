@@ -1,10 +1,10 @@
 import yaml
 import psycopg2
 import logging
-from flask import Flask
 import jsonpickle
 from enum import Enum
-from flask import request
+from models import User, CensuredUser, Role
+
 
 with open("../config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
@@ -19,21 +19,6 @@ def get_connection_to_db():
     )
     return conn
 
-class User:
-    def __init__(self, id, username, password="-"):
-        self.id = id
-        self.username = username
-        self.password = password
-
-class CensuredUser:
-    def __init__(self, id, username):
-        self.id = id
-        self.username = username
-
-class Role(Enum):
-    STUDENT = 0
-    TEACHER = 1
-    ADMIN = 2
 
 def add_user(username, password):
     conn = get_connection_to_db()
