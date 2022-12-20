@@ -3,10 +3,9 @@ from flask import request
 import db_handler
 
 
-
 app = Flask(__name__)
 
-@app.route("/add", methods=["POST"])
+@app.route("/users", methods=["POST"])
 def add_user():
     request_data = request.get_json()
     username, password = request_data.get("username"), request_data.get("password")
@@ -18,11 +17,8 @@ def add_user():
     if status == 409: return "Username alreday taken, pick a diffrent one", 409
     else: return request_data, 200
 
-@app.route("/remove", methods=["DELETE"])
-def remove_user():
-    request_data = request.get_json()
-    id_to_delete = request_data.get("id")
-
+@app.route("/users/<id_to_delete>", methods=["DELETE"])
+def remove_user(id_to_delete):
     if not id_to_delete: return "Incorrect json body.", 400
 
     status = db_handler.remove_user(id_to_delete)
