@@ -2,7 +2,7 @@ import yaml
 import psycopg2
 import logging
 import jsonpickle
-from enum import Enum
+import exceptions
 from models import User, CensuredUser, Role
 
 
@@ -19,7 +19,6 @@ def get_connection_to_db():
     )
     return conn
 
-
 def add_user(username, password):
     conn = get_connection_to_db()
     cur = conn.cursor()
@@ -29,7 +28,7 @@ def add_user(username, password):
     if (username,) in results:
         logging.warning("Username alreday taken, pick a diffrent one")
         conn.close()
-        return 409
+        raise exceptions.UsernameTakenError()
 
     query = f"INSERT INTO users (username, password,role) VALUES ('{username}', '{password}','USER')"
     cur.execute(query)
@@ -43,6 +42,12 @@ def remove_user(id_to_delete):
     conn = get_connection_to_db()
     cur = conn.cursor()
 
+    cur.execute("SELECT id FROM users")
+    results = cur.fetchall()
+    if (int(id_to_delete),) not in results:
+        conn.close()
+        raise exceptions.UserDosentExistError()
+
     query = f"DELETE FROM users WHERE id='{id_to_delete}'"
 
     cur.execute(query)
@@ -51,7 +56,6 @@ def remove_user(id_to_delete):
 
     conn.close()
     return 200
-
 
 def see_all_users():
     conn = get_connection_to_db()
@@ -64,6 +68,7 @@ def see_all_users():
 
     for row in results:
         users.append(CensuredUser(row[0], row[1]))
+
     conn.close()
     return jsonpickle.encode(users, unpicklable=False), 200
 
@@ -74,10 +79,10 @@ def see_user_data(user_id):
     query = f"SELECT id,username FROM users WHERE id = {user_id}"
     cur.execute(query)
     results = cur.fetchone()
-    if not results: return 400
+    if not results: conn.close(); raise exceptions.UserDosentExistError()
 
     user = CensuredUser(results[0], results[1])
-
-    return jsonpickle.encode(user, unpicklable=False), 200
+    conn.close()
+    return jsonpickle.encode(user, unpicklable=False)
 
 
