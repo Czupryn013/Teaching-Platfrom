@@ -1,11 +1,14 @@
-from flask import Flask
+
+
+from flask import Blueprint
 from flask import request
 import db_handler
 import exceptions
 
-app = Flask(__name__)
+controller_bp = Blueprint("controller_bp", __name__)
 
-@app.route("/users", methods=["POST"])
+
+@controller_bp.route("/users", methods=["POST"])
 def add_user():
     try:
         request_data = request.get_json()
@@ -17,7 +20,7 @@ def add_user():
     except exceptions.UsernameTakenError as e:
         return e.message, e.status
 
-@app.route("/users/<id_to_delete>", methods=["DELETE"])
+@controller_bp.route("/users/<id_to_delete>", methods=["DELETE"])
 def remove_user(id_to_delete):
     try:
         db_handler.remove_user(id_to_delete)
@@ -25,11 +28,11 @@ def remove_user(id_to_delete):
     except exceptions.UserDosentExistError as e:
         return e.message, e.status
 
-@app.route("/users", methods=["GET"])
+@controller_bp.route("/users", methods=["GET"])
 def see_all_users():
     return db_handler.see_all_users()
 
-@app.route("/users/<user_id>", methods=["GET"])
+@controller_bp.route("/users/<user_id>", methods=["GET"])
 def see_user_data(user_id):
     try:
         results = db_handler.see_user_data(user_id)

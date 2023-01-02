@@ -3,14 +3,20 @@ import psycopg2
 import logging
 import jsonpickle
 import exceptions
+from flask_sqlalchemy import SQLAlchemy
 from models import User, CensuredUser, Role
 
 
 with open("../config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{config['user']}:{config['password']}@localhost/{config['dbname']}"
+
 logging.basicConfig(level=logging.INFO,filemode="w", filename="../logs.log")
 jsonpickle.set_preferred_backend('json')
 jsonpickle.set_encoder_options('json', ensure_ascii=False)
+
+# db = SQLAlchemy(controller_bp)
 
 def get_connection_to_db():
     db_config = config["database"]
@@ -23,9 +29,9 @@ def add_user(username, password):
     conn = get_connection_to_db()
     cur = conn.cursor()
 
-    cur.execute("SELECT username FROM users")
+    cur.execute(f"SELECT username FROM users WHERE username = '{username}'")
     results = cur.fetchall()
-    if (username,) in results:
+    if results:
         logging.warning("Username alreday taken, pick a diffrent one")
         conn.close()
         raise exceptions.UsernameTakenError()

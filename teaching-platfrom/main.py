@@ -1,4 +1,9 @@
-import controller
+from flask import Flask
+from controller import controller_bp
 
 
-controller.app.run()
+app = Flask(__name__)
+app.register_blueprint(controller_bp)
+
+app.run()
+
