@@ -1,22 +1,22 @@
 import yaml
 import psycopg2
+from psycopg2 import errors
 import logging
 import jsonpickle
 import exceptions
-from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint
 from models import User, CensuredUser, Role
+from extensions import db
 
 
 with open("../config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{config['user']}:{config['password']}@localhost/{config['dbname']}"
+handler_bp = Blueprint("handler_bp", __name__)
 
 logging.basicConfig(level=logging.INFO,filemode="w", filename="../logs.log")
 jsonpickle.set_preferred_backend('json')
 jsonpickle.set_encoder_options('json', ensure_ascii=False)
 
-# db = SQLAlchemy(controller_bp)
 
 def get_connection_to_db():
     db_config = config["database"]
@@ -26,69 +26,40 @@ def get_connection_to_db():
     return conn
 
 def add_user(username, password):
-    conn = get_connection_to_db()
-    cur = conn.cursor()
+    user = User(username=username, password=password, role=Role.STUDENT.__str__())
 
-    cur.execute(f"SELECT username FROM users WHERE username = '{username}'")
-    results = cur.fetchall()
-    if results:
-        logging.warning("Username alreday taken, pick a diffrent one")
-        conn.close()
-        raise exceptions.UsernameTakenError()
+    results = User.query.filter_by(username=username).all()
+    if results: raise exceptions.UsernameTakenError()
 
-    query = f"INSERT INTO users (username, password,role) VALUES ('{username}', '{password}','USER')"
-    cur.execute(query)
-    conn.commit()
+    db.session.add(user)
+    db.session.commit()
+
     logging.info(f"User {username} added")
 
-    conn.close()
-    return 200
-
 def remove_user(id_to_delete):
-    conn = get_connection_to_db()
-    cur = conn.cursor()
+    results = User.query.filter_by(id=id_to_delete).first()
 
-    cur.execute("SELECT id FROM users")
-    results = cur.fetchall()
-    if (int(id_to_delete),) not in results:
-        conn.close()
-        raise exceptions.UserDosentExistError()
+    if not results: raise exceptions.UserDosentExistError()
 
-    query = f"DELETE FROM users WHERE id='{id_to_delete}'"
+    User.query.filter_by(id=id_to_delete).delete()
+    db.session.commit()
 
-    cur.execute(query)
-    conn.commit()
     logging.info(f"User with id {id_to_delete} has been removed sucessfuly.")
 
-    conn.close()
-    return 200
-
 def see_all_users():
-    conn = get_connection_to_db()
-    cur = conn.cursor()
-
-    query = f"SELECT id,username FROM users"
-    cur.execute(query)
-    results = cur.fetchall()
+    results = User.query.all()
     users = []
+    for user in results: users.append(CensuredUser(user.id, user.username, user.role))
 
-    for row in results:
-        users.append(CensuredUser(row[0], row[1]))
-
-    conn.close()
-    return jsonpickle.encode(users, unpicklable=False), 200
+    return jsonpickle.encode(users, unpicklable=False)
 
 def see_user_data(user_id):
-    conn = get_connection_to_db()
-    cur = conn.cursor()
+    results = User.query.filter_by(id=user_id).first()
 
-    query = f"SELECT id,username FROM users WHERE id = {user_id}"
-    cur.execute(query)
-    results = cur.fetchone()
-    if not results: conn.close(); raise exceptions.UserDosentExistError()
+    if not results: raise exceptions.UserDosentExistError()
 
-    user = CensuredUser(results[0], results[1])
-    conn.close()
+    user = CensuredUser(results.id, results.username, results.role)
+
     return jsonpickle.encode(user, unpicklable=False)
 
 

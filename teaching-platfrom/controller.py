@@ -1,9 +1,8 @@
-
-
 from flask import Blueprint
 from flask import request
 import db_handler
 import exceptions
+
 
 controller_bp = Blueprint("controller_bp", __name__)
 
@@ -30,7 +29,7 @@ def remove_user(id_to_delete):
 
 @controller_bp.route("/users", methods=["GET"])
 def see_all_users():
-    return db_handler.see_all_users()
+    return db_handler.see_all_users(), 200
 
 @controller_bp.route("/users/<user_id>", methods=["GET"])
 def see_user_data(user_id):
