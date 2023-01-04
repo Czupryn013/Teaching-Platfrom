@@ -1,29 +1,17 @@
 import yaml
-import psycopg2
-from psycopg2 import errors
 import logging
 import jsonpickle
 import exceptions
-from flask import Blueprint
 from models import User, CensuredUser, Role
 from extensions import db
 
 
 with open("../config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
-handler_bp = Blueprint("handler_bp", __name__)
 
 logging.basicConfig(level=logging.INFO,filemode="w", filename="../logs.log")
 jsonpickle.set_preferred_backend('json')
 jsonpickle.set_encoder_options('json', ensure_ascii=False)
-
-
-def get_connection_to_db():
-    db_config = config["database"]
-    conn = psycopg2.connect(host=db_config["host"],dbname = db_config["dbname"],
-                            user = db_config["user"], port = db_config["port"], password = db_config["password"]
-    )
-    return conn
 
 def add_user(username, password):
     user = User(username=username, password=password, role=Role.STUDENT.__str__())
