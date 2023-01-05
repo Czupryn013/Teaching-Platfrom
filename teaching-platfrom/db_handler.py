@@ -4,16 +4,24 @@ import jsonpickle
 import exceptions
 from models import User, CensuredUser, Role
 from extensions import db
+from password_strength import PasswordPolicy
 
 
 with open("../config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
+
+policy = PasswordPolicy.from_names(length=5,uppercase=1, numbers=2,special=1, nonletters=2,)
 
 logging.basicConfig(level=logging.INFO,filemode="w", filename="../logs.log")
 jsonpickle.set_preferred_backend('json')
 jsonpickle.set_encoder_options('json', ensure_ascii=False)
 
 def add_user(username, password):
+    test = policy.test(password)
+
+    if test: raise exceptions.PasswordToWeakError(f"Password breaks the following rules {test}.")
+    if not username or " " in username: raise exceptions.IncorrectUsername()
+
     user = User(username=username, password=password, role=Role.STUDENT.__str__())
 
     results = User.query.filter_by(username=username).all()

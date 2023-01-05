@@ -18,3 +18,30 @@ class UsernameTakenError(Exception):
 
     def __str__(self):
         return f"Error: {self.message} Status: {self.status}"
+
+class PasswordToWeakError(Exception):
+    def __init__(self, message="Given password is to weak."):
+        self.message = message
+        self.status = 406
+        logging.warning(message)
+
+    def __str__(self):
+        return f"Error: {self.message} Status: {self.status}"
+
+class IncorrectUsername(Exception):
+    def __init__(self):
+        self.message = "Incorrect username."
+        self.status = 406
+        logging.warning(self.message)
+
+    def __str__(self):
+        return f"Error: {self.message} Status: {self.status}"
+
+
+
+
+
+
+
+
+

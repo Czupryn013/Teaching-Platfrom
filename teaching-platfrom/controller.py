@@ -16,7 +16,7 @@ def add_user():
         if not username or not password: return "Incorrect json body", 400
         db_handler.add_user(username, password)
         return f"User {username} has been added sucessfuly.", 201
-    except exceptions.UsernameTakenError as e:
+    except exceptions.UsernameTakenError and exceptions.PasswordToWeakError and exceptions.IncorrectUsername as e:
         return e.message, e.status
 
 @controller_bp.route("/users/<id_to_delete>", methods=["DELETE"])
