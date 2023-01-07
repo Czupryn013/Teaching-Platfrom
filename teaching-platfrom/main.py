@@ -15,6 +15,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{db_config['user']}:{db_c
                                         f"@localhost/{db_config['dbname']}"
 
 db.init_app(app)
-app.run()
 
-db.create_all(bind_key="__all__")
+with app.app_context():
+    db.create_all(bind_key="__all__")
+
+app.run()

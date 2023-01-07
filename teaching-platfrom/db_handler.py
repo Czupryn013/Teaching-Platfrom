@@ -5,6 +5,7 @@ import exceptions
 from models import User, CensuredUser, Role
 from extensions import db
 from password_strength import PasswordPolicy
+from werkzeug.security import generate_password_hash
 
 
 with open("../config.yaml", "r") as f:
@@ -22,7 +23,9 @@ def add_user(username, password):
     if test: raise exceptions.PasswordToWeakError(f"Password breaks the following rules {test}.")
     if not username or " " in username: raise exceptions.IncorrectUsername()
 
-    user = User(username=username, password=password, role=Role.STUDENT.__str__())
+    encoded_password = generate_password_hash(password, method="sha256")
+
+    user = User(username=username, password=encoded_password, role=Role.STUDENT.__str__())
 
     results = User.query.filter_by(username=username).all()
     if results: raise exceptions.UsernameTakenError()
@@ -57,5 +60,12 @@ def see_user_data(user_id):
     user = CensuredUser(results.id, results.username, results.role)
 
     return jsonpickle.encode(user, unpicklable=False)
+
+def check_auth(username, password):
+    user = User.query.filter_by(username=username).first()
+
+    if not user or not user.password == password: raise exceptions.AuthError()
+
+    return True
 
 

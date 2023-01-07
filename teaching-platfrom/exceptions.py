@@ -37,6 +37,15 @@ class IncorrectUsername(Exception):
     def __str__(self):
         return f"Error: {self.message} Status: {self.status}"
 
+class AuthError(Exception):
+    def __init__(self):
+        self.message = "Authorization failed."
+        self.status = 401
+        logging.warning(self.message)
+
+    def __str__(self):
+        return f"Error: {self.message} Status: {self.status}"
+
 
 
 

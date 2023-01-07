@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask import request
 import db_handler
 import exceptions
+from flask_login import login_user
 
 
 controller_bp = Blueprint("controller_bp", __name__)
@@ -16,7 +17,7 @@ def add_user():
         if not username or not password: return "Incorrect json body", 400
         db_handler.add_user(username, password)
         return f"User {username} has been added sucessfuly.", 201
-    except exceptions.UsernameTakenError and exceptions.PasswordToWeakError and exceptions.IncorrectUsername as e:
+    except (exceptions.UsernameTakenError,exceptions.PasswordToWeakError,exceptions.IncorrectUsername) as e:
         return e.message, e.status
 
 @controller_bp.route("/users/<id_to_delete>", methods=["DELETE"])
@@ -38,3 +39,5 @@ def see_user_data(user_id):
         return results, 200
     except exceptions.UserDosentExistError as e:
         return e.message, e.status
+
+
