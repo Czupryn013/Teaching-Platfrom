@@ -1,8 +1,8 @@
 from flask import Blueprint
 from flask import request
+
 import db_handler
 import exceptions
-from flask_login import login_user
 
 
 controller_bp = Blueprint("controller_bp", __name__)

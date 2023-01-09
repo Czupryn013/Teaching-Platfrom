@@ -1,8 +1,9 @@
 import yaml
+
 from flask import Flask
+
 from controller import controller_bp
 from extensions import db
-from models import User
 
 
 with open("../config.yaml", "r") as f:

@@ -1,11 +1,13 @@
 import yaml
 import logging
+
 import jsonpickle
+from password_strength import PasswordPolicy
+from werkzeug.security import generate_password_hash
+
 import exceptions
 from models import User, CensuredUser, Role
 from extensions import db
-from password_strength import PasswordPolicy
-from werkzeug.security import generate_password_hash
 
 
 with open("../config.yaml", "r") as f:
